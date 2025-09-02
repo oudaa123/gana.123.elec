@@ -74,7 +74,7 @@ body {
 // الباسورد لعرض السعر
 const password = "7777";
 
-// قراءة CSV
+// قراءة CSV من نفس الريبو
 Papa.parse("products.csv", {
     download: true,
     header: true,
@@ -83,13 +83,14 @@ Papa.parse("products.csv", {
         const container = document.getElementById("products-container");
 
         products.forEach(product => {
+            const safeId = product.name.replace(/\s/g,'');
             container.innerHTML += `
                 <div class="product">
                     <img src="images/${product.image}" alt="${product.name}" />
                     <div class="name">${product.name}</div>
-                    <div class="price" id="price-${product.name.replace(/\s/g,'')}">
-                        <input type="password" placeholder="ادخل الباسورد 🔥" id="input-${product.name.replace(/\s/g,'')}" />
-                        <button onclick="showPrice('${product.name.replace(/\s/g,'')}', '${product.price}')">عرض السعر</button>
+                    <div class="price" id="price-${safeId}">
+                        <input type="password" placeholder="ادخل الباسورد 🔥" id="input-${safeId}" />
+                        <button onclick="showPrice('${safeId}', '${product.price}')">عرض السعر</button>
                     </div>
                 </div>
             `;
