@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>منتجات مملكة الأصليات</title>
+<style>
+body {
+  font-family: Tahoma, sans-serif;
+  background-color: #f9f9f9;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+.logo {
+  background: #25d366;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: inline-block;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.product {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px auto;
+  width: 300px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.product img {
+  width: 100%;
+  border-radius: 5px;
+}
+.name {
+  font-size: 20px;
+  margin: 10px 0;
+  color: #333;
+}
+.price {
+  font-size: 18px;
+  color: #e91e63;
+  margin: 10px 0;
+}
+.contact-btn {
+  background-color: #25d366;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  text-decoration: none;
+  display: inline-block;
+  margin: 5px;
+}
+</style>
+</head>
+<body>
+
+<!-- الشعار -->
+<div class="logo">
+🌟 مملكة الأصليات – المحل: جنه – المهندس محمود أبو كشك 🌟
+</div>
+
+<h1>منتجات مملكة الأصليات</h1>
+
+<div id="products-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+// الباسورد لعرض السعر
+const password = "7777";
+
+// قراءة CSV
+Papa.parse("products.csv", {
+    download: true,
+    header: true,
+    complete: function(results) {
+        const products = results.data;
+        const container = document.getElementById("products-container");
+
+        products.forEach(product => {
+            container.innerHTML += `
+                <div class="product">
+                    <img src="images/${product.image}" alt="${product.name}" />
+                    <div class="name">${product.name}</div>
+                    <div class="price" id="price-${product.name.replace(/\s/g,'')}">
+                        <input type="password" placeholder="ادخل الباسورد 🔥" id="input-${product.name.replace(/\s/g,'')}" />
+                        <button onclick="showPrice('${product.name.replace(/\s/g,'')}', '${product.price}')">عرض السعر</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+});
+
+// دالة لإظهار السعر بعد ادخال الباسورد
+function showPrice(id, price) {
+    const input = document.getElementById("input-" + id);
+    if(input.value === password) {
+        const priceDiv = document.getElementById("price-" + id);
+        priceDiv.innerHTML = `السعر: ${price} 🔥`;
+    } else {
+        alert("الباسورد خطأ!");
+    }
+}
+</script>
+
+</body>
+</html>
