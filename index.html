@@ -2,149 +2,115 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>مملكة الأصليات</title>
-<style>
-body {
-    font-family: Tahoma, sans-serif;
-    background-color: #f9f9f9;
-    margin:0;
-    padding:0;
-    text-align: center;
-}
-.logo {
-    background: #25d366;
-    color: white;
-    font-size: 22px;
-    font-weight: bold;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    display: inline-block;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-.products-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-}
-.product {
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    width: 220px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    position: relative;
-}
-.product img {
-    width: 100%;
-    border-radius: 5px;
-}
-.name {
-    font-size: 18px;
-    margin: 10px 0;
-    color: #333;
-}
-.price {
-    font-size: 16px;
-    color: #e91e63;
-    margin: 5px 0;
-}
-.button {
-    background-color: #25d366;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 8px;
-    margin: 5px 0;
-    cursor: pointer;
-    width: 100%;
-    font-size: 14px;
-}
-.button.cart {
-    background-color: #ff9800;
-}
-.watermark {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 80px;
-    color: rgba(0,0,0,0.05);
-    pointer-events: none;
-    z-index: -1;
-}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>جميع منتجات جنة</title>
+
+<!-- ربط ملف CSS -->
+<link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
 
-<div class="logo">
-🌟 مملكة الأصليات – شركة جنه لاكسسوار المحمول بنبروه– 01067070423 🌟
+<!-- شاشة تحميل -->
+<div id="initial-loading" class="loading-screen">
+    <div class="loading-box">
+        <div class="loading-icon">📦</div>
+        <h2>جاري تحميل المنتجات...</h2>
+        <div class="progress-bar"><div id="loading-progress"></div></div>
+        <p id="loading-status">جاري الاتصال...</p>
+    </div>
 </div>
 
-<h1>منتجات مملكة الأصليات</h1>
-<div class="watermark">المهندس محمود أبو كشك</div>
+<!-- الهيدر -->
+<header class="main-header">
+    <h1>📦 ELEC.123 – جميع منتجات جنة</h1>
 
-<div>
-<input type="password" id="password" placeholder="ادخل الباسورد لعرض الأسعار 🔥" />
-<button onclick="showPrices()">عرض الأسعار</button>
+    <div class="header-buttons">
+        <button id="cartBtn">🛒 السلة <span id="cartCount">0</span></button>
+        <button id="totalBtn">💰 إجمالي الفاتورة</button>
+        <button onclick="location.href='index.html'">🏠 الرئيسية</button>
+        <button id="updateBtn">🔄 تحديث</button>
+        <button id="clearCartBtn">🗑️ مسح السلة</button>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 ابحث عن منتج...">
+        <button id="specialOfferBtn">💥 خصم للمندوب</button>
+    </div>
+</header>
+
+<!-- قائمة الأقسام -->
+<div class="categories-container">
+    <div class="categories-bar" id="categoriesBar">
+        <!-- يتم ملؤها تلقائياً من JS -->
+    </div>
 </div>
 
-<div class="products-container" id="products-container"></div>
+<!-- المنطقة الرئيسية -->
+<main id="mainPage" style="display:none;">
 
-<button class="button cart" onclick="sendCart()">أضف جميع المنتجات إلى السلة</button>
+    <!-- عرض الأقسام -->
+    <section id="categoriesView" class="categories-grid"></section>
 
-<script>
-const products = [
-  { name: "سماعة الوان", image: "samaa_alwan.jpg", price: 11 },
-  { name: "سماعة ايفون", image: "samaa_iphone.jpg", price: 65 },
-  { name: "سماعة بلو 21", image: "sama3a_alwan.jpg", price: 35 },
-  { name: "سماعة سامسونج", image: "samaa3a_iphone.jpg", price: 35 },
-  { name: "شاحن التر 02 تايب سي", image: "charger_wao.jpg", price: 65 },
-  { name: "شاحن واو تايب سي", image: "charger_ultra02.jpg", price: 28 },
-  { name: "كابل الك 31", image: "cable_elk31.jpg", price: 40 },
-  { name: "كابل دليفن تايب سي", image: "cable_delven_typc.jpg", price: 11 }
-];
+    <!-- عرض المنتجات -->
+    <section id="productsView" class="products-grid" style="display:none;"></section>
 
-const whatsappNumber = "01022495795";
+</main>
 
-function renderProducts() {
-    const container = document.getElementById("products-container");
-    products.forEach((product, index) => {
-        container.innerHTML += `
-        <div class="product">
-            <img src="images/${product.image}" alt="${product.name}" />
-            <div class="name">${product.name}</div>
-            <div class="price" id="price-${index}">---</div>
-            <button class="button" onclick="orderNow('${product.name}')">اطلب الآن</button>
-        </div>`;
-    });
-}
+<!-- زر حفظ السلة -->
+<button id="saveCartBtn" class="floating-save">💾 حفظ السلة</button>
 
-function showPrices() {
-    const pass = document.getElementById("password").value;
-    if(pass === "7777") {
-        products.forEach((product, index) => {
-            document.getElementById("price-" + index).innerText = product.price + " جنيه 🔥";
-        });
-    } else {
-        alert("الباسورد خطأ!");
-    }
-}
+<!-- مودال كلمة المرور -->
+<div id="passwordModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePasswordModal()">×</span>
+        <h2>أدخل كلمة السر لعرض الأسعار</h2>
+        <input type="password" id="passwordInput" placeholder="كلمة السر">
+        <button id="passwordSubmitBtn">تأكيد</button>
+    </div>
+</div>
 
-function orderNow(name) {
-    alert(`رقم المحل: 01067070423\n01022495795\nالسيارة: 01096005334`);
-}
+<!-- مودال إجمالي الفاتورة -->
+<div id="totalModal" class="modal">
+    <div class="modal-content large">
+        <span class="close" onclick="closeTotalModal()">×</span>
+        <h2>إجمالي الفاتورة</h2>
+        <div id="invoiceDate"></div>
+        <table id="invoiceTable">
+            <!-- يتم ملؤه تلقائياً -->
+        </table>
+        <div class="total-buttons">
+            <button id="sendInvoiceBtn">📤 إرسال الفاتورة</button>
+            <button id="saveInvoiceBtn">💾 حفظ الفاتورة</button>
+        </div>
+    </div>
+</div>
 
-function sendCart() {
-    let cartText = products.map(p => `${p.name} - ${p.price} جنيه`).join("%0A");
-    let whatsappURL = `https://wa.me/${whatsappNumber}?text=تم تحويل جميع المنتجات:%0A${cartText}`;
-    window.open(whatsappURL, "_blank");
-}
+<!-- مودال طلب منتج -->
+<div id="productRequestModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeProductRequestModal()">×</span>
+        <h2>طلب منتج غير متوفر</h2>
+        <textarea id="requestText" placeholder="اكتب اسم المنتج..."></textarea>
+        <button id="sendRequestBtn">إرسال</button>
+    </div>
+</div>
 
-renderProducts();
-</script>
+<!-- مودال اختيار رقم لإرسال الطلب -->
+<div id="numbersModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeNumbersModal()">×</span>
+        <h2>اختر رقم التواصل</h2>
+        <a id="officeNumber" class="number-btn">📞 مكتب</a>
+        <a id="storeNumber" class="number-btn">📞 محل</a>
+        <a id="carNumber" class="number-btn">📞 سيارة</a>
+    </div>
+</div>
 
+
+<!-- ملف الجافاسكريبت -->
+<script src="app.js"></script>
 </body>
 </html>
