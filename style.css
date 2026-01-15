@@ -1,0 +1,278 @@
+/* =========================
+   إعداد الصفحة الأساسية
+   ========================= */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Cairo', sans-serif;
+    background: #f7f7f7;
+    direction: rtl;
+    text-align: right;
+}
+
+/* =========================
+   شاشة التحميل
+   ========================= */
+.loading-screen {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+.loading-box {
+    text-align: center;
+}
+
+.loading-icon {
+    font-size: 60px;
+}
+
+.progress-bar {
+    width: 300px;
+    height: 10px;
+    background: #ddd;
+    margin: 15px auto;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#loading-progress {
+    width: 0%;
+    height: 100%;
+    background: #2196f3;
+}
+
+/* =========================
+   الهيدر
+   ========================= */
+.main-header {
+    background: #ffffff;
+    padding: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.12);
+    margin-bottom: 10px;
+}
+
+.main-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 22px;
+    text-align: center;
+}
+
+/* أزرار الهيدر */
+.header-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.header-buttons button {
+    padding: 10px 14px;
+    background: #2196f3;
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.header-buttons button:hover {
+    background: #0b7dda;
+}
+
+/* البحث */
+.search-box {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.search-box input {
+    width: 60%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* =========================
+   قائمة الأقسام
+   ========================= */
+.categories-container {
+    overflow-x: auto;
+    background: #fff;
+    padding: 10px 0;
+    white-space: nowrap;
+}
+
+.categories-bar {
+    display: inline-flex;
+    gap: 10px;
+    padding: 0 10px;
+}
+
+.category-btn {
+    padding: 8px 12px;
+    background: #e3f2fd;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid #2196f3;
+    font-size: 14px;
+}
+
+.category-btn:hover {
+    background: #bbdefb;
+}
+
+/* =========================
+   المنتجات
+   ========================= */
+.products-grid {
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.product-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.product-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+}
+
+.product-card h3 {
+    font-size: 16px;
+    margin: 8px 0 5px 0;
+}
+
+.product-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #444;
+}
+
+.product-card button {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.product-card button:hover {
+    background: #45a049;
+}
+
+/* =========================
+   السلة
+   ========================= */
+.floating-save {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    padding: 12px 20px;
+    background: #ff9800;
+    color: #fff;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    z-index: 10000;
+}
+
+/* =========================
+   المودالات
+   ========================= */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    padding-top: 80px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: auto;
+    padding: 20px;
+    border: none;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 10px;
+}
+
+.modal-content.large {
+    max-width: 700px;
+}
+
+.close {
+    float: left;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
+}
+
+.number-btn {
+    display: block;
+    padding: 12px;
+    margin: 8px 0;
+    background: #2196f3;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.number-btn:hover {
+    background: #0b7dda;
+}
+
+/* =========================
+   جدول الفاتورة
+   ========================= */
+#invoiceTable {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+#invoiceTable td {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+
+/* =========================
+   موبايل
+   ========================= */
+@media (max-width: 600px) {
+    .product-card img {
+        height: 120px;
+    }
+}
