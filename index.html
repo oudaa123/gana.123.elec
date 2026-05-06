@@ -1,116 +1,1099 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>جميع منتجات جنة</title>
-
-<!-- ربط ملف CSS -->
-<link rel="stylesheet" href="style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشهد الجامعة - فيلم 3D</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0f;
+            overflow: hidden;
+            font-family: 'Cairo', 'Arial', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            cursor: pointer;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        /* شاشة التحميل */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease;
+            flex-direction: column;
+        }
+        
+        #loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader-text {
+            color: #ff4757;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            letter-spacing: 2px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .loader-ring {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 71, 87, 0.2);
+            border-top: 3px solid #ff4757;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* تراكب النص */
+        #overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 30px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            z-index: 100;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+        
+        .subtitle-ar {
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            line-height: 1.6;
+        }
+        
+        .subtitle-en {
+            color: #ccc;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+        
+        /* زر إعادة التشغيل */
+        #restartBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 71, 87, 0.7);
+            color: #fff;
+            border: 2px solid #ff4757;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 200;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        #restartBtn:hover {
+            background: #ff4757;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 71, 87, 0.5);
+        }
+        
+        /* إشارة التقدم */
+        #timeline {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            z-index: 200;
+            overflow: hidden;
+        }
+        
+        #timeline-bar {
+            height: 100%;
+            background: #ff4757;
+            border-radius: 2px;
+            transition: width 0.3s linear;
+            width: 0%;
+            box-shadow: 0 0 10px #ff4757;
+        }
+        
+        /* تعليمات */
+        #hint {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+            z-index: 200;
+            animation: fadeInOut 3s forwards;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
 </head>
-
 <body>
-
-<!-- شاشة تحميل -->
-<div id="initial-loading" class="loading-screen">
-    <div class="loading-box">
-        <div class="loading-icon">📦</div>
-        <h2>جاري تحميل المنتجات...</h2>
-        <div class="progress-bar"><div id="loading-progress"></div></div>
-        <p id="loading-status">جاري الاتصال...</p>
+    
+    <!-- شاشة التحميل -->
+    <div id="loading">
+        <div class="loader-ring"></div>
+        <div class="loader-text">جاري تحميل المشهد...</div>
     </div>
-</div>
-
-<!-- الهيدر -->
-<header class="main-header">
-    <h1>📦 ELEC.123 – جميع منتجات جنة</h1>
-
-    <div class="header-buttons">
-        <button id="cartBtn">🛒 السلة <span id="cartCount">0</span></button>
-        <button id="totalBtn">💰 إجمالي الفاتورة</button>
-        <button onclick="location.href='index.html'">🏠 الرئيسية</button>
-        <button id="updateBtn">🔄 تحديث</button>
-        <button id="clearCartBtn">🗑️ مسح السلة</button>
+    
+    <!-- تعليمات -->
+    <div id="hint">🖱 يمكنك تحريك الكاميرا | 📜 انزل للأسفل للترجمة</div>
+    
+    <!-- زر إعادة -->
+    <button id="restartBtn" onclick="location.reload()">🔁 إعادة المشهد</button>
+    
+    <!-- شريط التقدم -->
+    <div id="timeline">
+        <div id="timeline-bar"></div>
+    </div>
+    
+    <!-- الترجمة -->
+    <div id="overlay">
+        <div class="subtitle-ar" id="subtitleAr">...</div>
+        <div class="subtitle-en" id="subtitleEn"></div>
     </div>
 
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="🔍 ابحث عن منتج...">
-        <button id="specialOfferBtn">💥 خصم للمندوب</button>
-    </div>
-</header>
+    <!-- Three.js من CDN -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 
-<!-- قائمة الأقسام -->
-<div class="categories-container">
-    <div class="categories-bar" id="categoriesBar">
-        <!-- يتم ملؤها تلقائياً من JS -->
-    </div>
-</div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-<!-- المنطقة الرئيسية -->
-<main id="mainPage" style="display:none;">
+        // ============ إخفاء التحميل ============
+        setTimeout(() => {
+            document.getElementById('loading').classList.add('hidden');
+        }, 1500);
 
-    <!-- عرض الأقسام -->
-    <section id="categoriesView" class="categories-grid"></section>
+        // ============ المشهد ============
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('#1a1a2e');
+        scene.fog = new THREE.Fog('#1a1a2e', 15, 50);
 
-    <!-- عرض المنتجات -->
-    <section id="productsView" class="products-grid" style="display:none;"></section>
+        // ============ الكاميرا ============
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.5, 100);
+        camera.position.set(8, 3.5, 12);
+        camera.lookAt(0, 1.5, 0);
 
-</main>
+        // ============ الرندرر الرئيسي ============
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+        document.body.appendChild(renderer.domElement);
 
-<!-- زر حفظ السلة -->
-<button id="saveCartBtn" class="floating-save">💾 حفظ السلة</button>
+        // ============ رندرر النصوص CSS ============
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'fixed';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        labelRenderer.domElement.style.zIndex = '50';
+        document.body.appendChild(labelRenderer.domElement);
 
-<!-- مودال كلمة المرور -->
-<div id="passwordModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closePasswordModal()">×</span>
-        <h2>أدخل كلمة السر لعرض الأسعار</h2>
-        <input type="password" id="passwordInput" placeholder="كلمة السر">
-        <button id="passwordSubmitBtn">تأكيد</button>
-    </div>
-</div>
+        // ============ التحكم بالكاميرا ============
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 1.5, 0);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.minDistance = 3;
+        controls.maxDistance = 25;
+        controls.maxPolarAngle = Math.PI / 1.8;
+        controls.update();
 
-<!-- مودال إجمالي الفاتورة -->
-<div id="totalModal" class="modal">
-    <div class="modal-content large">
-        <span class="close" onclick="closeTotalModal()">×</span>
-        <h2>إجمالي الفاتورة</h2>
-        <div id="invoiceDate"></div>
-        <table id="invoiceTable">
-            <!-- يتم ملؤه تلقائياً -->
-        </table>
-        <div class="total-buttons">
-            <button id="sendInvoiceBtn">📤 إرسال الفاتورة</button>
-            <button id="saveInvoiceBtn">💾 حفظ الفاتورة</button>
-        </div>
-    </div>
-</div>
+        // ============ الإضاءة ============
+        // ضوء محيط
+        const ambientLight = new THREE.AmbientLight('#8899bb', 0.6);
+        scene.add(ambientLight);
 
-<!-- مودال طلب منتج -->
-<div id="productRequestModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeProductRequestModal()">×</span>
-        <h2>طلب منتج غير متوفر</h2>
-        <textarea id="requestText" placeholder="اكتب اسم المنتج..."></textarea>
-        <button id="sendRequestBtn">إرسال</button>
-    </div>
-</div>
+        // ضوء الشمس الرئيسي (يدخل من الشبابيك)
+        const sunLight = new THREE.DirectionalLight('#fff5e6', 4);
+        sunLight.position.set(10, 8, 5);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 50;
+        sunLight.shadow.camera.left = -15;
+        sunLight.shadow.camera.right = 15;
+        sunLight.shadow.camera.top = 10;
+        sunLight.shadow.camera.bottom = -5;
+        sunLight.shadow.bias = -0.0001;
+        sunLight.shadow.normalBias = 0.02;
+        scene.add(sunLight);
 
-<!-- مودال اختيار رقم لإرسال الطلب -->
-<div id="numbersModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeNumbersModal()">×</span>
-        <h2>اختر رقم التواصل</h2>
-        <a id="officeNumber" class="number-btn">📞 مكتب</a>
-        <a id="storeNumber" class="number-btn">📞 محل</a>
-        <a id="carNumber" class="number-btn">📞 سيارة</a>
-    </div>
-</div>
+        // ضوء تعبئة
+        const fillLight = new THREE.DirectionalLight('#8899cc', 1.2);
+        fillLight.position.set(-3, 2, -4);
+        scene.add(fillLight);
 
+        // ضوء خلفي للشخصيات
+        const rimLight = new THREE.DirectionalLight('#ffffff', 1.5);
+        rimLight.position.set(0, 3, -6);
+        scene.add(rimLight);
 
-<!-- ملف الجافاسكريبت -->
-<script src="app.js"></script>
+        // ============ الأرضية ============
+        const floorGeometry = new THREE.PlaneGeometry(30, 30);
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: '#d4c5b9',
+            roughness: 0.3,
+            metalness: 0.05
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -0.01;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // شبكة السيراميك
+        const gridHelper = new THREE.PolarGridHelper(14, 40, 28, 256, '#c4b5a9', '#c4b5a9');
+        gridHelper.position.y = 0;
+        scene.add(gridHelper);
+
+        // ============ الجدران ============
+        function createWall(width, height, depth, color, x, y, z, ry = 0) {
+            const geo = new THREE.BoxGeometry(width, height, depth);
+            const mat = new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: 0.7,
+                metalness: 0.02
+            });
+            const wall = new THREE.Mesh(geo, mat);
+            wall.position.set(x, y, z);
+            wall.rotation.y = ry;
+            wall.receiveShadow = true;
+            wall.castShadow = true;
+            scene.add(wall);
+            return wall;
+        }
+
+        // الجدار الخلفي
+        createWall(18, 6, 0.4, '#e8e0d8', 0, 3, -7);
+        
+        // الجدار الأيسر (جزئي - مفتوح للكاميرا)
+        createWall(10, 6, 0.4, '#f0e8e0', -8, 3, -2);
+        
+        // عمود
+        function createPillar(x, z) {
+            const geo = new THREE.BoxGeometry(0.5, 5, 0.5);
+            const mat = new THREE.MeshStandardMaterial({
+                color: '#c8beb5',
+                roughness: 0.4,
+                metalness: 0.1
+            });
+            const pillar = new THREE.Mesh(geo, mat);
+            pillar.position.set(x, 2.5, z);
+            pillar.castShadow = true;
+            pillar.receiveShadow = true;
+            scene.add(pillar);
+            return pillar;
+        }
+        createPillar(-5, -3);
+        createPillar(5, -3);
+
+        // شبابيك (مستطيلات مضيئة)
+        function createWindow(x, y, z) {
+            const group = new THREE.Group();
+            
+            // إطار النافذة
+            const frameGeo = new THREE.BoxGeometry(2, 2.5, 0.1);
+            const frameMat = new THREE.MeshStandardMaterial({
+                color: '#3d3529',
+                roughness: 0.3,
+                metalness: 0.6
+            });
+            const frame = new THREE.Mesh(frameGeo, frameMat);
+            group.add(frame);
+            
+            // الزجاج
+            const glassGeo = new THREE.PlaneGeometry(1.7, 2.2);
+            const glassMat = new THREE.MeshStandardMaterial({
+                color: '#c8d8f0',
+                roughness: 0.1,
+                metalness: 0.2,
+                emissive: '#8899cc',
+                emissiveIntensity: 0.4,
+                transparent: true,
+                opacity: 0.6
+            });
+            const glass = new THREE.Mesh(glassGeo, glassMat);
+            glass.position.z = 0.06;
+            group.add(glass);
+            
+            group.position.set(x, y, z);
+            group.receiveShadow = true;
+            scene.add(group);
+            return group;
+        }
+        createWindow(-3, 3, -6.85);
+        createWindow(0, 3, -6.85);
+        createWindow(3, 3, -6.85);
+
+        // لوحة الإعلانات
+        function createBulletinBoard(x, y, z) {
+            const group = new THREE.Group();
+            const boardGeo = new THREE.BoxGeometry(2, 1.5, 0.15);
+            const boardMat = new THREE.MeshStandardMaterial({
+                color: '#8B6914',
+                roughness: 0.6,
+                metalness: 0.1
+            });
+            const board = new THREE.Mesh(boardGeo, boardMat);
+            board.position.y = 0.75;
+            group.add(board);
+            
+            // ورق على اللوحة
+            for (let i = 0; i < 5; i++) {
+                const paperGeo = new THREE.PlaneGeometry(0.3, 0.4);
+                const paperMat = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color().setHSL(Math.random() * 0.1 + 0.1, 0.1, 1),
+                    roughness: 0.8
+                });
+                const paper = new THREE.Mesh(paperGeo, paperMat);
+                paper.position.set(
+                    (Math.random() - 0.5) * 1.2,
+                    0.75 + (Math.random() - 0.5) * 1,
+                    0.08
+                );
+                paper.rotation.z = (Math.random() - 0.5) * 0.3;
+                group.add(paper);
+            }
+            
+            group.position.set(x, y, z);
+            group.castShadow = true;
+            group.receiveShadow = true;
+            scene.add(group);
+            return group;
+        }
+        const bulletinBoard = createBulletinBoard(-2, 1, -6.7);
+
+        // مقاعد خشبية في الخلف
+        function createBench(x, z, ry = 0) {
+            const group = new THREE.Group();
+            
+            // المقعد
+            const seatGeo = new THREE.BoxGeometry(2.5, 0.12, 0.6);
+            const woodMat = new THREE.MeshStandardMaterial({
+                color: '#8B6914',
+                roughness: 0.5,
+                metalness: 0.05
+            });
+            const seat = new THREE.Mesh(seatGeo, woodMat);
+            seat.position.y = 0.5;
+            seat.castShadow = true;
+            seat.receiveShadow = true;
+            group.add(seat);
+            
+            // الظهر
+            const backGeo = new THREE.BoxGeometry(2.5, 0.6, 0.1);
+            const back = new THREE.Mesh(backGeo, woodMat);
+            back.position.set(0, 0.85, -0.25);
+            back.castShadow = true;
+            group.add(back);
+            
+            // الأرجل
+            for (let lx of [-1, 1]) {
+                for (let lz of [-0.2, 0.2]) {
+                    const legGeo = new THREE.BoxGeometry(0.1, 0.45, 0.1);
+                    const leg = new THREE.Mesh(legGeo, woodMat);
+                    leg.position.set(lx, 0.22, lz);
+                    leg.castShadow = true;
+                    group.add(leg);
+                }
+            }
+            
+            group.position.set(x, 0, z);
+            group.rotation.y = ry;
+            scene.add(group);
+            return group;
+        }
+        createBench(-3.5, -5, 0.2);
+        createBench(-0.5, -5, -0.1);
+        createBench(2.5, -5.3, -0.3);
+
+        // ============ نباتات ============
+        function createPlant(x, z) {
+            const group = new THREE.Group();
+            
+            // وعاء
+            const potGeo = new THREE.CylinderGeometry(0.25, 0.3, 0.7, 16);
+            const potMat = new THREE.MeshStandardMaterial({
+                color: '#8B4513',
+                roughness: 0.4,
+                metalness: 0.2
+            });
+            const pot = new THREE.Mesh(potGeo, potMat);
+            pot.position.y = 0.35;
+            pot.castShadow = true;
+            group.add(pot);
+            
+            // أوراق
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const leafGeo = new THREE.SphereGeometry(0.15, 8, 4);
+                leafGeo.scale(1, 0.3, 0.5);
+                const leafMat = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color().setHSL(0.25 + i * 0.03, 0.7, 0.35),
+                    roughness: 0.6
+                });
+                const leaf = new THREE.Mesh(leafGeo, leafMat);
+                leaf.position.set(
+                    Math.cos(angle) * 0.2,
+                    0.7 + Math.random() * 0.3,
+                    Math.sin(angle) * 0.2
+                );
+                leaf.rotation.y = angle;
+                leaf.rotation.z = (Math.random() - 0.5) * 0.8;
+                leaf.castShadow = true;
+                group.add(leaf);
+            }
+            
+            group.position.set(x, 0, z);
+            scene.add(group);
+            return group;
+        }
+        createPlant(-4.5, -4);
+        createPlant(4, -4.5);
+
+        // ============ مساعدات لإنشاء الشخصيات ============
+        
+        // جسم الشخصية
+        function createBody(skinColor, height, weight = 1, shirtColor, pantsColor) {
+            const bodyGroup = new THREE.Group();
+            
+            // عامل التضخيم للوزن (عرض إضافي)
+            const weightFactor = 0.3 + weight * 0.55;
+            
+            // الجذع (القميص)
+            const torsoGeo = new THREE.CapsuleGeometry(0.35 * weightFactor, 0.7, 8, 12);
+            torsoGeo.scale(1, 0.85, 0.8);
+            const shirtMat = new THREE.MeshStandardMaterial({
+                color: shirtColor,
+                roughness: 0.5,
+                metalness: 0.03
+            });
+            const torso = new THREE.Mesh(torsoGeo, shirtMat);
+            torso.position.y = height * 0.57;
+            torso.castShadow = true;
+            bodyGroup.add(torso);
+            
+            // البطن إضافي للوزن الثقيل
+            if (weight > 0.6) {
+                const bellyGeo = new THREE.SphereGeometry(0.28 * weightFactor, 8, 8);
+                bellyGeo.scale(1, 0.7, 0.8);
+                const belly = new THREE.Mesh(bellyGeo, shirtMat);
+                belly.position.y = height * 0.52;
+                belly.position.z = 0.05;
+                belly.castShadow = true;
+                bodyGroup.add(belly);
+            }
+            
+            // الرقبة
+            const neckGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.15, 8);
+            const skinMat = new THREE.MeshStandardMaterial({
+                color: skinColor,
+                roughness: 0.6,
+                metalness: 0.02
+            });
+            const neck = new THREE.Mesh(neckGeo, skinMat);
+            neck.position.y = height * 0.78;
+            neck.castShadow = true;
+            bodyGroup.add(neck);
+            
+            // الرأس
+            const headGeo = new THREE.SphereGeometry(0.18, 16, 14);
+            const head = new THREE.Mesh(headGeo, skinMat);
+            head.position.y = height * 0.86;
+            head.scale.set(1, 0.92, 0.85);
+            head.castShadow = true;
+            bodyGroup.add(head);
+            
+            // الوجه الممتلئ للوزن الثقيل
+            if (weight > 0.6) {
+                const cheekGeo = new THREE.SphereGeometry(0.12, 8, 8);
+                const cheekL = new THREE.Mesh(cheekGeo, skinMat);
+                cheekL.position.set(-0.14, height * 0.86, 0.12);
+                cheekL.scale.set(0.7, 0.5, 0.4);
+                bodyGroup.add(cheekL);
+                
+                const cheekR = new THREE.Mesh(cheekGeo, skinMat);
+                cheekR.position.set(0.14, height * 0.86, 0.12);
+                cheekR.scale.set(0.7, 0.5, 0.4);
+                bodyGroup.add(cheekR);
+                
+                // ذقن مزدوج
+                const chinGeo = new THREE.SphereGeometry(0.08, 8, 6);
+                const chin = new THREE.Mesh(chinGeo, skinMat);
+                chin.position.set(0, height * 0.81, 0.13);
+                chin.scale.set(0.8, 0.4, 0.5);
+                bodyGroup.add(chin);
+            }
+            
+            // العيون
+            const eyeWhiteGeo = new THREE.SphereGeometry(0.04, 8, 6);
+            const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.1 });
+            
+            [-0.06, 0.06].forEach(side => {
+                const eyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+                eyeWhite.position.set(side, height * 0.88, 0.14);
+                bodyGroup.add(eyeWhite);
+                
+                const pupilGeo = new THREE.SphereGeometry(0.022, 8, 6);
+                const pupilMat = new THREE.MeshStandardMaterial({ color: '#1a0a00', roughness: 0.05 });
+                const pupil = new THREE.Mesh(pupilGeo, pupilMat);
+                pupil.position.set(side, height * 0.88, 0.17);
+                bodyGroup.add(pupil);
+            });
+            
+            // الحواجب
+            const browGeo = new THREE.BoxGeometry(0.07, 0.013, 0.013);
+            const browMat = new THREE.MeshStandardMaterial({ color: '#3a2010', roughness: 0.7 });
+            [-0.06, 0.06].forEach(side => {
+                const brow = new THREE.Mesh(browGeo, browMat);
+                brow.position.set(side, height * 0.91, 0.15);
+                bodyGroup.add(brow);
+            });
+            
+            // الفم
+            const mouthGeo = new THREE.BoxGeometry(0.06, 0.01, 0.01);
+            const mouthMat = new THREE.MeshStandardMaterial({ color: '#8B3A3A', roughness: 0.3 });
+            const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+            mouth.position.set(0, height * 0.835, 0.16);
+            mouth.name = 'mouth';
+            bodyGroup.add(mouth);
+            
+            // الشعر
+            const hairColor = '#2a1508';
+            const hairMat = new THREE.MeshStandardMaterial({
+                color: hairColor,
+                roughness: 0.7,
+                metalness: 0.05
+            });
+            const hairGeo = new THREE.SphereGeometry(0.19, 12, 8);
+            const hair = new THREE.Mesh(hairGeo, hairMat);
+            hair.position.y = height * 0.88;
+            hair.scale.set(1, 0.35, 0.9);
+            hair.position.y += 0.05;
+            bodyGroup.add(hair);
+            
+            // الأذرع
+            [-1, 1].forEach(side => {
+                const upperArmGeo = new THREE.CapsuleGeometry(0.08 * weightFactor, 0.35, 6, 8);
+                const armMat = new THREE.MeshStandardMaterial({
+                    color: shirtColor,
+                    roughness: 0.5,
+                    metalness: 0.03
+                });
+                const upperArm = new THREE.Mesh(upperArmGeo, armMat);
+                upperArm.position.set(side * 0.4, height * 0.65, 0);
+                upperArm.rotation.z = side * 0.2;
+                upperArm.castShadow = true;
+                upperArm.name = side === 1 ? 'rightUpperArm' : 'leftUpperArm';
+                bodyGroup.add(upperArm);
+                
+                // ساعد
+                const forearmGeo = new THREE.CapsuleGeometry(0.07 * weightFactor, 0.3, 6, 8);
+                const forearm = new THREE.Mesh(forearmGeo, armMat);
+                forearm.position.set(side * 0.45, height * 0.38, 0.05);
+                forearm.rotation.z = side * 0.4;
+                forearm.castShadow = true;
+                forearm.name = side === 1 ? 'rightForearm' : 'leftForearm';
+                bodyGroup.add(forearm);
+                
+                // يد
+                const handGeo = new THREE.SphereGeometry(0.06, 6, 6);
+                const hand = new THREE.Mesh(handGeo, skinMat);
+                hand.position.set(side * 0.45, height * 0.2, 0.05);
+                hand.castShadow = true;
+                hand.name = side === 1 ? 'rightHand' : 'leftHand';
+                bodyGroup.add(hand);
+            });
+            
+            // الأرجل
+            [-1, 1].forEach(side => {
+                const legGeo = new THREE.CapsuleGeometry(0.1 * weightFactor, 0.5, 6, 8);
+                const pantsMaterial = new THREE.MeshStandardMaterial({
+                    color: pantsColor,
+                    roughness: 0.5,
+                    metalness: 0.03
+                });
+                const leg = new THREE.Mesh(legGeo, pantsMaterial);
+                leg.position.set(side * 0.15, height * 0.2, 0);
+                leg.castShadow = true;
+                leg.name = side === 1 ? 'rightLeg' : 'leftLeg';
+                bodyGroup.add(leg);
+                
+                // حذاء
+                const shoeGeo = new THREE.BoxGeometry(0.12, 0.08, 0.18);
+                const shoeMat = new THREE.MeshStandardMaterial({
+                    color: '#2a1a10',
+                    roughness: 0.4,
+                    metalness: 0.1
+                });
+                const shoe = new THREE.Mesh(shoeGeo, shoeMat);
+                shoe.position.set(side * 0.15, 0.04, 0.04);
+                shoe.castShadow = true;
+                bodyGroup.add(shoe);
+            });
+            
+            return bodyGroup;
+        }
+
+        // طرحه (حجاب)
+        function createHijab(bodyGroup, height) {
+            const headPos = height * 0.86;
+            const hijabGroup = new THREE.Group();
+            
+            const hijabMat = new THREE.MeshStandardMaterial({
+                color: '#8B0000',
+                roughness: 0.45,
+                metalness: 0.05
+            });
+            
+            // الغطاء الرئيسي
+            const hijabGeo = new THREE.SphereGeometry(0.22, 16, 10);
+            const hijab = new THREE.Mesh(hijabGeo, hijabMat);
+            hijab.position.y = headPos + 0.04;
+            hijab.scale.set(1.05, 0.65, 0.9);
+            hijabGroup.add(hijab);
+            
+            // طرف الطرحه المتدلي على الكتف
+            const drapeGeo = new THREE.PlaneGeometry(0.4, 0.7, 4, 6);
+            const drape = new THREE.Mesh(drapeGeo, hijabMat);
+            drape.position.set(0.35, headPos - 0.3, 0.1);
+            drape.rotation.set(-0.4, 0.3, -0.6);
+            hijabGroup.add(drape);
+            
+            // طرف آخر
+            const drape2Geo = new THREE.PlaneGeometry(0.3, 0.5, 4, 5);
+            const drape2 = new THREE.Mesh(drape2Geo, hijabMat);
+            drape2.position.set(-0.25, headPos - 0.25, -0.05);
+            drape2.rotation.set(0.5, -0.2, 0.8);
+            hijabGroup.add(drape2);
+            
+            bodyGroup.add(hijabGroup);
+            return hijabGroup;
+        }
+
+        // ============ إنشاء الشخصيات ============
+        
+        // نورهان (بنت - قميص أحمر - وزن 96 كجم - طول 165 سم)
+        const norhan = new THREE.Group();
+        const norhanBody = createBody('#e8c5a0', 1.65, 0.85, '#cc1111', '#2a2a3a');
+        createHijab(norhanBody, 1.65);
+        norhan.add(norhanBody);
+        norhan.position.set(-1.2, 0, -2.5);
+        norhan.rotation.y = 0.3;
+        scene.add(norhan);
+
+        // كريم (الرجل الواقف مع نورهان)
+        const karim = new THREE.Group();
+        const karimBody = createBody('#d4a574', 1.78, 0.3, '#3a6b8c', '#2a2a3a');
+        karim.add(karimBody);
+        karim.position.set(0.3, 0, -2.1);
+        karim.rotation.y = -0.4;
+        scene.add(karim);
+
+        // يوسف (الحبيب - أسمر - تي شيرت أسود)
+        const youssef = new THREE.Group();
+        const youssefBody = createBody('#6B3A2A', 1.75, 0.25, '#1a1a1a', '#1a2a3a');
+        
+        // تي شيرت أسود (تغيير لون القميص)
+        youssef.add(youssefBody);
+        youssef.position.set(7, 0, 2);
+        youssef.rotation.y = -1.5;
+        scene.add(youssef);
+
+        // ============ كيس بلاستيك في يد يوسف ============
+        const bagGroup = new THREE.Group();
+        const bagGeo = new THREE.SphereGeometry(0.2, 8, 6);
+        bagGeo.scale(1, 1.3, 0.7);
+        const bagMat = new THREE.MeshStandardMaterial({
+            color: '#e8e0d0',
+            roughness: 0.3,
+            metalness: 0.05,
+            transparent: true,
+            opacity: 0.85
+        });
+        const bag = new THREE.Mesh(bagGeo, bagMat);
+        bag.position.y = -0.05;
+        bagGroup.add(bag);
+        
+        // مقبض الكيس
+        const handleGeo = new THREE.TorusGeometry(0.08, 0.015, 8, 8);
+        const handle = new THREE.Mesh(handleGeo, bagMat);
+        handle.position.y = 0.2;
+        handle.rotation.x = Math.PI / 2;
+        bagGroup.add(handle);
+        
+        bagGroup.position.set(0.5, 0.55, 0.05);
+        bagGroup.rotation.z = -0.3;
+        youssef.add(bagGroup);
+
+        // ============ جزيئات الغبار في ضوء الشمس ============
+        const dustParticles = new THREE.Group();
+        const dustGeo = new THREE.SphereGeometry(0.015, 4, 4);
+        const dustMat = new THREE.MeshBasicMaterial({ color: '#fffbe6', transparent: true, opacity: 0.7 });
+        
+        for (let i = 0; i < 60; i++) {
+            const dust = new THREE.Mesh(dustGeo, dustMat);
+            dust.position.set(
+                (Math.random() - 0.5) * 8,
+                Math.random() * 4 + 0.5,
+                -2 + (Math.random() - 0.5) * 4
+            );
+            dust.userData = {
+                speed: Math.random() * 0.3 + 0.1,
+                offset: Math.random() * Math.PI * 2,
+                amplitude: Math.random() * 0.5
+            };
+            dustParticles.add(dust);
+        }
+        scene.add(dustParticles);
+
+        // ============ نظام الجسيمات للضربة ============
+        const impactParticles = new THREE.Group();
+        impactParticles.visible = false;
+        for (let i = 0; i < 20; i++) {
+            const pGeo = new THREE.SphereGeometry(0.03, 4, 4);
+            const pMat = new THREE.MeshStandardMaterial({
+                color: '#ff4444',
+                roughness: 0.3,
+                emissive: '#ff0000',
+                emissiveIntensity: 0.5
+            });
+            const particle = new THREE.Mesh(pGeo, pMat);
+            particle.userData = {
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 3,
+                    Math.random() * 2 + 1,
+                    (Math.random() - 0.5) * 3
+                ),
+                life: 1
+            };
+            impactParticles.add(particle);
+        }
+        scene.add(impactParticles);
+
+        // ============ نص CSS للأسماء ============
+        function createLabel(text, color) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.color = color;
+            div.style.fontSize = '14px';
+            div.style.fontWeight = 'bold';
+            div.style.textShadow = '1px 1px 3px black';
+            div.style.background = 'rgba(0,0,0,0.5)';
+            div.style.padding = '2px 8px';
+            div.style.borderRadius = '10px';
+            return new CSS2DObject(div);
+        }
+
+        const labelNorhan = createLabel('نورهان', '#ff6b7f');
+        labelNorhan.position.set(0, 2.1, 0);
+        norhan.add(labelNorhan);
+
+        const labelKarim = createLabel('كريم', '#6ba3cc');
+        labelKarim.position.set(0, 2.2, 0);
+        karim.add(labelKarim);
+
+        const labelYoussef = createLabel('يوسف', '#c4956a');
+        labelYoussef.position.set(0, 2.2, 0);
+        youssef.add(labelYoussef);
+
+        // ============ متغيرات المشهد ============
+        const clock = new THREE.Clock();
+        let sceneTime = 0;
+        const totalDuration = 22; // مدة المشهد بالثواني
+        let punchTriggered = false;
+        let punchTime = 0;
+        let bagDropped = false;
+        let bagDropTime = 0;
+        const bagOriginalPos = bagGroup.position.clone();
+
+        // ============ الترجمة ============
+        const subtitles = [
+            { time: 0, ar: '🎬 مشهد داخل كلية الهندسة', en: 'Scene: Faculty of Engineering' },
+            { time: 2, ar: 'كريم: الدكتور النهارده كان هاينيم العيال 😄', en: 'Karim: That professor almost put everyone to sleep' },
+            { time: 4, ar: 'نورهان تضحك... 😂', en: 'Norhan laughs...' },
+            { time: 6.5, ar: 'يوسف يدخل من الباب... يبتسم 😊', en: 'Youssef enters the door... smiling' },
+            { time: 8.5, ar: 'يوسف يرى نورهان مع كريم... يتوقف 😐', en: 'Youssef sees Norhan with Karim... stops' },
+            { time: 10.5, ar: 'يوسف: إيه ده؟! 😠', en: 'Youssef: What is this?!' },
+            { time: 12.5, ar: 'يسقط الكيس من يده... 💥', en: 'He drops the bag...' },
+            { time: 14.5, ar: 'يوسف يندفع نحو كريم بسرعة! 🏃', en: 'Youssef rushes toward Karim!' },
+            { time: 16.5, ar: 'نورهان تصرخ: يوسف استنى!! 😱', en: 'Norhan screams: Youssef wait!!' },
+            { time: 17.5, ar: '💢 يوسف يضرب كريم بقوة!', en: '💢 Youssef punches Karim hard!' },
+            { time: 19, ar: 'كريم يقع على الأرض...', en: 'Karim falls to the ground...' },
+            { time: 20.5, ar: 'نورهان تبكي... المشهد يتجمد 🥀', en: 'Norhan cries... scene freezes' }
+        ];
+
+        // ============ حلقة الرسم ============
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const dt = Math.min(clock.getDelta(), 0.1);
+            sceneTime += dt;
+            
+            const progress = Math.min(sceneTime / totalDuration, 1);
+            document.getElementById('timeline-bar').style.width = (progress * 100) + '%';
+            
+            // تحديث الترجمة
+            const currentSub = subtitles.filter(s => s.time <= sceneTime).pop();
+            if (currentSub) {
+                document.getElementById('subtitleAr').textContent = currentSub.ar;
+                document.getElementById('subtitleEn').textContent = currentSub.en;
+            }
+            
+            // ===== تحريك الشخصيات حسب زمن المشهد =====
+            
+            // المشهد 1-3: نورهان وكريم يتكلمان ويضحكان
+            if (sceneTime >= 2 && sceneTime < 10) {
+                const talkCycle = Math.sin(sceneTime * 5) * 0.15;
+                // كريم يميل نحو نورهان
+                karim.rotation.y = -0.4 + Math.sin(sceneTime * 3) * 0.1;
+                karim.position.x = 0.3 + Math.sin(sceneTime * 2.5) * 0.2;
+                
+                // نورهان تضحك (تهتز)
+                const laughShake = Math.abs(Math.sin(sceneTime * 8)) * 0.05;
+                norhan.position.y = laughShake;
+                norhan.rotation.z = Math.sin(sceneTime * 7) * 0.03;
+                
+                // فم مبتسم
+                const mouth = norhanBody.getObjectByName('mouth');
+                if (mouth) {
+                    mouth.scale.y = 1 + Math.abs(Math.sin(sceneTime * 6)) * 3;
+                }
+            }
+            
+            // المشهد 4: يوسف يدخل
+            if (sceneTime >= 6.5 && sceneTime < 10.5) {
+                const entranceProgress = (sceneTime - 6.5) / 4;
+                const easedProgress = entranceProgress < 0.5 
+                    ? 2 * entranceProgress * entranceProgress 
+                    : 1 - Math.pow(-2 * entranceProgress + 2, 2) / 2;
+                
+                youssef.position.x = 7 - easedProgress * 7;
+                youssef.position.z = 2 - easedProgress * 5;
+                youssef.rotation.y = -1.5 + easedProgress * 1.9;
+                
+                // الكيس يتأرجح
+                bagGroup.rotation.z = -0.3 + Math.sin(sceneTime * 4) * 0.2;
+            }
+            
+            // المشهد 5-6: يوسف يرى المشهد ويتوقف
+            if (sceneTime >= 10.5 && sceneTime < 14.5) {
+                // توقف مفاجئ
+                youssef.position.x += (1.2 - youssef.position.x) * 0.1;
+                youssef.position.z += (-2.8 - youssef.position.z) * 0.1;
+                
+                // توتر في جسده
+                const tension = (sceneTime - 10.5) / 4;
+                youssef.rotation.z = Math.sin(sceneTime * 6) * 0.02 * tension;
+                
+                // سقوط الكيس
+                if (sceneTime >= 12.5 && !bagDropped) {
+                    bagDropped = true;
+                    bagDropTime = sceneTime;
+                }
+                
+                if (bagDropped) {
+                    const dropElapsed = sceneTime - bagDropTime;
+                    const dropProgress = Math.min(dropElapsed / 1.5, 1);
+                    bagGroup.position.y = 0.55 - dropProgress * 0.55;
+                    bagGroup.rotation.z = -0.3 + dropProgress * 1.8;
+                    bagGroup.rotation.x = dropProgress * 0.5;
+                }
+            }
+            
+            // المشهد 7-8: الاندفاع والضربة
+            if (sceneTime >= 14.5 && sceneTime < 18) {
+                const rushProgress = (sceneTime - 14.5) / 3.5;
+                const rushEased = Math.min(rushProgress, 1);
+                
+                // يوسف يندفع نحو كريم
+                youssef.position.x = 1.2 - rushEased * 2.2;
+                youssef.position.z = -2.8 + rushEased * 1.3;
+                youssef.rotation.y = -0.4 + rushEased * 0.6;
+                
+                // ذراع يوسف تتحضر للضربة
+                const rightUpperArm = youssefBody.getObjectByName('rightUpperArm');
+                const rightForearm = youssefBody.getObjectByName('rightForearm');
+                if (rightUpperArm && rushProgress > 0.5) {
+                    rightUpperArm.rotation.z += (1.5 - rightUpperArm.rotation.z) * 0.3;
+                    rightUpperArm.rotation.x += (-0.8 - rightUpperArm.rotation.x) * 0.3;
+                }
+                if (rightForearm && rushProgress > 0.5) {
+                    rightForearm.rotation.z += (0.8 - rightForearm.rotation.z) * 0.3;
+                }
+                
+                // الضربة عند 17.5
+                if (sceneTime >= 17.5 && !punchTriggered) {
+                    punchTriggered = true;
+                    punchTime = sceneTime;
+                    impactParticles.visible = true;
+                    impactParticles.position.copy(karim.position);
+                    impactParticles.position.y += 1.5;
+                    
+                    // إعادة تعيين جزيئات الضربة
+                    impactParticles.children.forEach(p => {
+                        p.position.set(0, 0, 0);
+                        p.userData.life = 1;
+                        p.userData.velocity.set(
+                            (Math.random() - 0.5) * 3,
+                            Math.random() * 2 + 1,
+                            (Math.random() - 0.5) * 3
+                        );
+                    });
+                }
+                
+                // حركة كريم بعد الضربة
+                if (punchTriggered) {
+                    const punchElapsed = sceneTime - punchTime;
+                    const punchForce = Math.max(0, 1 - punchElapsed / 2);
+                    
+                    // كريم يتراجع للخلف
+                    karim.position.y = Math.sin(punchElapsed * 8) * 0.3 * punchForce;
+                    karim.position.z = -2.1 - punchElapsed * 1.5;
+                    karim.position.x = 0.3 - punchElapsed * 0.4;
+                    karim.rotation.z = -0.4 * punchForce;
+                    karim.rotation.x = 0.3 * punchForce;
+                    
+                    // جزيئات الضربة
+                    impactParticles.children.forEach(p => {
+                        p.position.x += p.userData.velocity.x * dt * 2;
+                        p.position.y += p.userData.velocity.y * dt * 2;
+                        p.position.z += p.userData.velocity.z * dt * 2;
+                        p.userData.velocity.y -= 1.5 * dt;
+                        p.userData.life -= dt * 0.8;
+                        p.material.opacity = p.userData.life;
+                        p.scale.setScalar(p.userData.life);
+                    });
+                    
+                    // ذراع يوسف تعود
+                    if (rightUpperArm && punchElapsed > 0.3) {
+                        rightUpperArm.rotation.z += (-0.3 - rightUpperArm.rotation.z) * 0.2;
+                        rightUpperArm.rotation.x += (0 - rightUpperArm.rotation.x) * 0.2;
+                    }
+                }
+            }
+            
+            // المشهد 9: التوقف الدرامي
+            if (sceneTime >= 18 && sceneTime < totalDuration) {
+                // كل شيء يتباطأ
+                const slowdown = 1 - (sceneTime - 18) / (totalDuration - 18);
+                
+                // نورهان ترتجف
+                norhan.position.y = Math.sin(sceneTime * 15) * 0.03;
+                norhan.rotation.z = Math.sin(sceneTime * 3) * 0.05;
+                
+                // فم مفتوح (صرخة)
+                const mouth = norhanBody.getObjectByName('mouth');
+                if (mouth) {
+                    mouth.scale.y = 1 + slowdown * 4;
+                }
+                
+                // تأثير freeze frame في النهاية
+                if (sceneTime > 20.5) {
+                    const freezeProgress = (sceneTime - 20.5) / 1.5;
+                    scene.fog.density = freezeProgress * 0.04;
+                }
+            }
+            
+            // حركة جزيئات الغبار المستمرة
+            dustParticles.children.forEach(dust => {
+                dust.position.y += Math.sin(sceneTime * dust.userData.speed + dust.userData.offset) * dust.userData.amplitude * dt;
+                dust.position.x += Math.cos(sceneTime * dust.userData.speed * 1.3) * dust.userData.amplitude * 0.5 * dt;
+                dust.material.opacity = 0.3 + Math.sin(sceneTime * 2 + dust.userData.offset) * 0.3;
+            });
+            
+            // تحديث الكاميرا
+            controls.update();
+            
+            // تحريك تلقائي خفيف للكاميرا في النهاية
+            if (sceneTime > 18) {
+                const autoMove = (sceneTime - 18) / 4;
+                camera.position.x += (6 - camera.position.x) * autoMove * dt;
+                camera.position.z += (8 - camera.position.z) * autoMove * dt;
+                controls.target.y += (1.3 - controls.target.y) * autoMove * dt;
+            }
+            
+            // الرسم
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+
+        // ============ بدء التشغيل ============
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // بدء الرسم
+        animate();
+        
+        console.log('🎬 المشهد جاهز!');
+        console.log('👩 نورهان - 165 سم / 96 كجم - قميص أحمر وطرحه');
+        console.log('👨 كريم - زميل الدراسة');
+        console.log('👨🏾 يوسف - الحبيب الأسمر - تي شيرت أسود');
+        console.log('📍 المكان: كلية الهندسة');
+        console.log('🖱 يمكنك التحريك بالماوس');
+    </script>
 </body>
 </html>
